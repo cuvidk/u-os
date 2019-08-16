@@ -12,7 +12,7 @@ QEMU_SYSTEM=qemu-system-x86_64
 
 CONFIG_OUT_FILE="${QEMU_SYSTEM}.conf"
 MEMORY="512M"
-BOOT_ORDER="abd" #floppy1, floppy2, first CD-ROM
+BOOT_ORDER="dab" #first cd-rom, floppy1, floppy2
 VGA="std"
 TIMESTAMP="timestamp=on"
 
@@ -43,5 +43,5 @@ ${QEMU_SYSTEM} \
     -smp ${SMP} \
     -vga ${VGA} \
     -msg ${TIMESTAMP} \
-    -fda "${OS_IMAGE}" \
-    -writeconfig "${CONFIG_OUT_FILE}"
+    -cdrom "${OS_IMAGE}" \
+    -monitor stdio

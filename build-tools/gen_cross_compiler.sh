@@ -3,12 +3,14 @@
 # change the versions bellow to build other gcc compiler / binutils versions
 # check https://wiki.osdev.org/Cross-Compiler_Successful_Builds for a list
 # of compatible gcc - binutils pairs
-BUILD_BINUTILS_VERSION='2.30'
+BUILD_BINUTILS_VERSION='2.32'
 BUILD_GCC_VERSION='7.4.0'
+
+export TARGET=x86_64-elf
 
 DEPENDENCIES='build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libcloog-isl-dev libisl-dev'
 CURRENT_DIR="$(pwd)"
-CROSS_COMPILER_DIR="${CURRENT_DIR}/cross-compiler"
+CROSS_COMPILER_DIR="${CURRENT_DIR}/${TARGET}-cross-compiler"
 CROSS_COMPILER_INSTALLATION_DIR="${CROSS_COMPILER_DIR}/install"
 
 BUILD_BINUTILS_TAR="${CROSS_COMPILER_DIR}/binutils-${BUILD_BINUTILS_VERSION}.tar.gz"
@@ -22,7 +24,6 @@ BUILD_GCC_BUILD="${CROSS_COMPILER_DIR}/build-gcc-${BUILD_GCC_VERSION}"
 BUILD_GCC_URL="https://ftp.gnu.org/gnu/gcc/gcc-${BUILD_GCC_VERSION}/gcc-${BUILD_GCC_VERSION}.tar.gz"
 
 export PREFIX="${CROSS_COMPILER_INSTALLATION_DIR}"
-export TARGET=x86_64-elf
 export PATH="${PREFIX}/bin:$PATH"
 
 function announce() {
@@ -60,7 +61,7 @@ wget "${BUILD_GCC_URL}" || exit 1
 tar -xzf "${BUILD_GCC_TAR}" || exit 1
 rm -rf "${BUILD_GCC_TAR}"
 
-echo "Installing packages necessary for cross-compiler build"
+announce "Installing packages necessary for cross-compiler build"
 for dependency in ${DEPENDENCIES}; do
     announce "Installing ${dependency}"
     apt -y install ${dependency} || exit 3
