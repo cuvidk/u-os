@@ -1,12 +1,23 @@
-[BITS 32]
+BITS 32
 
 %include "util.h"
 %include "vga_print.h"
+
+; ----------------------------------------------- .data ------------------------------------------------ 
+
+section .data
+    current_line dd 0x0
+
+
+; ----------------------------------------------- .text ------------------------------------------------
+
+section .text
 
 global _vga_put_char:function
 global _vga_put_str:function
 global _vga_clear_screen:function
 global _vga_clear_row:function
+global _vga_print_cstr:function
 
 _vga_put_char:
     xor ebx, ebx
@@ -71,4 +82,38 @@ _vga_put_str:
     add esi, 0x1
     cmp ecx, 0
     jne .should_col_wrap
+    ret
+
+; length is returned in eax. Don't ruin it!
+vga_strlen:
+    xor eax, eax
+    xor ebx, ebx
+    mov ebx, [esp + 0x4]
+.check_equal_to_null:
+    cmp BYTE [ebx], 0x0
+    je .end
+    inc eax
+    inc ebx
+    jmp .check_equal_to_null
+.end:
+    ret
+
+; convenience function that forwards a call to _vga_put_str
+; it keeps the track of the current line that should be printed on
+_vga_print_cstr:
+    mov esi, [esp + 0x4] ; addr of the cstr
+
+    push esi
+    call vga_strlen
+    add esp, 4
+
+    BITS_32_CALL _vga_put_str, esi, eax, [current_line], 0x0
+
+    mov eax, [current_line]
+    inc eax
+    cmp eax, VGA_SCREEN_HEIGHT
+    jne .skip_reset
+    xor eax, eax
+.skip_reset:
+    mov [current_line], eax
     ret

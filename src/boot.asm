@@ -5,14 +5,17 @@ BITS 32 ; i'm forcing the assembler to gen 32bit code even though i'm compiling 
 %include "vga_print.h"
 %include "util.h"
 
-extern _vga_put_str
 extern _vga_clear_screen
+extern _vga_print_cstr
+extern _enable_paging
 
 %define MBOOT_HEADER_ALIGN (1 << 0) ; tells bootloader that all modules loaded should be 4KB aligned
 %define MBOOT_HEADER_MMAP (1 << 1)  ; tells bootloader that a memory map should be provided
 %define MBOOT_HEADER_FLAGS (MBOOT_HEADER_ALIGN | MBOOT_HEADER_MMAP)
 %define MBOOT_HEADER_MAGIC 0x1badb002
 %define MBOOT_HEADER_CHECKSUM (0 - MBOOT_HEADER_FLAGS - MBOOT_HEADER_MAGIC)
+
+%define LOG(m_addr) BITS_32_CALL _vga_print_cstr, m_addr
 
 ; --------------------------------------------- .multiboot ---------------------------------------------
 
@@ -45,19 +48,20 @@ gdt:
     db 0b1001_0010
     db 0b1100_1111
     db 0x00
-.end
+.end:
 
 gdt_desc:
     dw gdt.end - gdt ; - 1 byte ????
     dd gdt
 
-str_data:
-    kern_msg db 'hello world'
-    kern_msg_len equ $ - kern_msg
+kern_info:
+    hello_boot     db 'Starting system initialization:', 0
+    info_gdt       db '   * 32 bit GDT has been setup', 0
+    info_paging    db '   * Paging has been enabled', 0
 
+; ------------------------------------------------ .bss ------------------------------------------------
 
 section .bss
-    ; system v abi requires the stack to be 16 byte aligned
     align 16
 stack_limit:
     resb 16384
@@ -66,8 +70,12 @@ stack_top:
 ; ----------------------------------------------- .text ------------------------------------------------
 
 section .text
+
 global _start:function (_start.end - _start)
+
 _start:
+    LOG(hello_boot)
+
     ; The multiboot compliant bootloader already drops us in 32 bit protected mode.
     ; The bootloader is required to handle only the initialization of the segment
     ; registers, however it is stated that GDTR may be invalid (it seems GRUB actually
@@ -82,11 +90,15 @@ _start:
     mov es, ax
     mov fs, ax
     mov gs, ax
+    ; No need to transition in protected mode since the multiboot
+    ; compliant bootloader already handles that
+    LOG(info_gdt)
 
     mov esp, stack_top
     mov ebp, esp
 
-    BITS_32_CALL _vga_put_str, kern_msg, kern_msg_len, 0, 0
+    BITS_32_CALL _enable_paging
+    LOG(info_paging)
 
     cli
 .hang:
