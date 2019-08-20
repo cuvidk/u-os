@@ -17,13 +17,16 @@ CC=../build-tools/x86_64-elf-cross-compiler/install/bin/x86_64-elf-gcc
 all: os-bin
 	grub-mkrescue -o $(OS_ISO) $(ISO_DIR)
 
-os-bin: boot.o vga_print.o paging.o
+os-bin: boot.o vga_print.o segmentation.o paging.o
 	$(CC) $(LD_FLAGS) $(CC_FLAGS) -o $(OS_BIN) $(OBJ_DIR)/*
 
 boot.o: boot.asm
 	$(AS) $(AS_FLAGS) -o $(OBJ_DIR)/$@ $<
 
 vga_print.o: vga_print.asm
+	$(AS) $(AS_FLAGS) -o $(OBJ_DIR)/$@ $<
+
+segmentation.o: segmentation.asm
 	$(AS) $(AS_FLAGS) -o $(OBJ_DIR)/$@ $<
 
 paging.o: paging.asm

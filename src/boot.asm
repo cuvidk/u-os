@@ -7,6 +7,8 @@ BITS 32 ; i'm forcing the assembler to gen 32bit code even though i'm compiling 
 
 extern _vga_clear_screen
 extern _vga_print_cstr
+extern _setup_gdt32
+extern _setup_gdt64
 extern _enable_paging
 
 %define MBOOT_HEADER_ALIGN (1 << 0) ; tells bootloader that all modules loaded should be 4KB aligned
@@ -28,36 +30,10 @@ section .multiboot
 ; ----------------------------------------------- .data ------------------------------------------------ 
 
 section .data
-; GDT is already 8 byte aligned (actually 4KB aligned) due to the
-; linker that specifies that the data segment should be 4KB alligned
-gdt: 
-.null_seg_desc:
-    dq 0x0
-.code_seg_desc:
-    dw 0xffff       ; segment limit (b0 - b15)
-    dw 0x0000       ; base address (b0 - b15)
-    db 0x00         ; base address (b16 - b23)
-    db 0b1001_1010  ; 0: present byte, 1-2: DPL, 3: desc type (sys / code or data), 4-7: type
-    db 0b1100_1111  ; 0: granularity, 1: D/B, 2: L, 3: AVL, 4-7: segment limit (b16 - b19)
-    db 0x00         ; base address (b24 - b31)
-                    ; see 3.4.5 Intel_V3 for more info
-.data_seg_desc:
-    dw 0xffff
-    dw 0x0000
-    db 0x00
-    db 0b1001_0010
-    db 0b1100_1111
-    db 0x00
-.end:
-
-gdt_desc:
-    dw gdt.end - gdt ; - 1 byte ????
-    dd gdt
-
-kern_info:
     hello_boot     db 'Starting system initialization:', 0
-    info_gdt       db '   * 32 bit GDT has been setup', 0
-    info_paging    db '   * Paging has been enabled', 0
+    info_gdt32     db '   * Setting up 32 bit GDT', 0
+    info_paging    db '   * Enabling 4 level paging', 0
+    info_long_mode db '   * Setting up 64 bit GDT and transitioning to long mode', 0
 
 ; ------------------------------------------------ .bss ------------------------------------------------
 
@@ -76,29 +52,23 @@ global _start:function (_start.end - _start)
 _start:
     LOG(hello_boot)
 
-    ; The multiboot compliant bootloader already drops us in 32 bit protected mode.
-    ; The bootloader is required to handle only the initialization of the segment
-    ; registers, however it is stated that GDTR may be invalid (it seems GRUB actually
-    ; provides a valid GDTR). Taking into account all that, I'm creating my own GDT
-    ; just to be sure all's good and why not for practice reasons.
-    lgdt [gdt_desc]
-    jmp (gdt.code_seg_desc - gdt):.reload_segments
-.reload_segments:
-    mov ax, (gdt.data_seg_desc - gdt)
-    mov ds, ax
-    mov ss, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    ; No need to transition in protected mode since the multiboot
-    ; compliant bootloader already handles that
-    LOG(info_gdt)
-
+    ; setup a stack
     mov esp, stack_top
     mov ebp, esp
 
-    BITS_32_CALL _enable_paging
+    LOG(info_gdt32)
+    call _setup_gdt32
+
     LOG(info_paging)
+    call _enable_paging
+
+    LOG(info_long_mode)
+    call _setup_gdt64
+
+BITS 64
+    mov rax, 0x2f592f412f4b2f4f
+    mov qword [0xb8000], rax
+    BREAKPOINT
 
     cli
 .hang:
