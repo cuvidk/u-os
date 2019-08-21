@@ -42,7 +42,7 @@ gdt64:
     db 0x00         
 ; not definining a data segment descriptor
 ; since it would be useless in long mode
-; will point all data segments to the null seg desc
+; will point all data registers to the null seg desc
 .end:
 
 gdt64_desc:

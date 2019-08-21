@@ -11,6 +11,8 @@ extern _setup_gdt32
 extern _setup_gdt64
 extern _enable_paging
 
+extern kernel_main
+
 %define MBOOT_HEADER_ALIGN (1 << 0) ; tells bootloader that all modules loaded should be 4KB aligned
 %define MBOOT_HEADER_MMAP (1 << 1)  ; tells bootloader that a memory map should be provided
 %define MBOOT_HEADER_FLAGS (MBOOT_HEADER_ALIGN | MBOOT_HEADER_MMAP)
@@ -66,9 +68,10 @@ _start:
     call _setup_gdt64
 
 BITS 64
-    mov rax, 0x2f592f412f4b2f4f
-    mov qword [0xb8000], rax
-    BREAKPOINT
+    call kernel_main
+
+    ;mov rax, 0x2f592f412f4b2f4f
+    ;mov qword [0xb8000], rax
 
     cli
 .hang:
