@@ -19,7 +19,7 @@ CC=../build-tools/x86_64-elf-cross-compiler/install/bin/x86_64-elf-gcc
 all: os-bin
 	grub-mkrescue -o $(OS_ISO) $(ISO_DIR)
 
-os-bin: boot.o vga_print.o segmentation.o paging.o kernel.o kprint.o string.o
+os-bin: boot.o vga_print.o segmentation.o paging.o kernel.o vga.o string.o kprint.o
 	$(CC) $(LD_FLAGS) $(CC_FLAGS) -o $(OS_BIN) $(OBJ_DIR)/*
 
 boot.o: boot.asm
@@ -37,10 +37,13 @@ paging.o: paging.asm
 kernel.o: kernel.c
 	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/$@ -c $<
 
-kprint.o: kprint.c
+vga.o: vga.c
 	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/$@ -c $<
 
 string.o: string.c
+	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/$@ -c $<
+    
+kprint.o: kprint.c
 	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/$@ -c $<
 
 clean: clean-obj clean-os
