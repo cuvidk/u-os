@@ -8,3 +8,14 @@ size_t strlen(const char* str) {
     return len;
 }
 
+void* memset(void* b, int c, size_t len) {
+    unsigned char* dst = (unsigned char*)b;
+
+    while (len--) {
+        *dst = (unsigned char)c;
+        ++dst;
+    }
+
+    return b;
+}
+

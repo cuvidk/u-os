@@ -1,6 +1,6 @@
-#include <stdint.h>
 #include "vga.h"
 #include "string.h"
+#include <stdint.h>
 
 static uint16_t* vga_buffer = (uint16_t*)VGA_BUFFER_ADDR;
 static short crt_row;
