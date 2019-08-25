@@ -19,35 +19,23 @@ CC=../build-tools/x86_64-elf-cross-compiler/install/bin/x86_64-elf-gcc
 all: os-bin
 	grub-mkrescue -o $(OS_ISO) $(ISO_DIR)
 
-os-bin: boot.o vga_print.o segmentation.o paging.o kernel.o vga.o string.o kprint.o xform.o
+os-bin: gen_as_objs gen_cc_objs
 	$(CC) $(LD_FLAGS) $(CC_FLAGS) -o $(OS_BIN) $(OBJ_DIR)/*
 
-boot.o: boot.asm
-	$(AS) $(AS_FLAGS) -o $(OBJ_DIR)/$@ $<
+gen_as_objs:
+	$(AS) $(AS_FLAGS) -o $(OBJ_DIR)/boot.o boot.asm
+	$(AS) $(AS_FLAGS) -o $(OBJ_DIR)/vga_print.o vga_print.asm
+	$(AS) $(AS_FLAGS) -o $(OBJ_DIR)/segmentation.o segmentation.asm
+	$(AS) $(AS_FLAGS) -o $(OBJ_DIR)/paging.o paging.asm
 
-vga_print.o: vga_print.asm
-	$(AS) $(AS_FLAGS) -o $(OBJ_DIR)/$@ $<
-
-segmentation.o: segmentation.asm
-	$(AS) $(AS_FLAGS) -o $(OBJ_DIR)/$@ $<
-
-paging.o: paging.asm
-	$(AS) $(AS_FLAGS) -o $(OBJ_DIR)/$@ $<
-
-kernel.o: kernel.c
-	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/$@ -c $<
-
-vga.o: vga.c
-	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/$@ -c $<
-
-string.o: string.c
-	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/$@ -c $<
-    
-kprint.o: kprint.c
-	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/$@ -c $<
-
-xform.o: xform.c
-	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/$@ -c $<
+gen_cc_objs: $(CSRC_FILES) 
+	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/kernel.o -c kernel.c
+	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/vga.o -c vga.c
+	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/string.o -c string.c
+	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/kprint.o -c kprint.c
+	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/xform.o -c xform.c
+	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/io.o -c io.c
+	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/pic.o -c pic.c
 
 clean: clean-obj clean-os
 

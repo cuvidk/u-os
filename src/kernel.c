@@ -1,11 +1,15 @@
 #include "string.h"
 #include "vga.h"
 #include "kprint.h"
+#include "pic.h"
+
 #include <limits.h>
 #include <stdint.h>
 
 void kernel_main() {
     vga_reset_screen();
+
+    pic_init();
 
     kprint("715 33z %s bruh (%s) \nescaping %% since 2019, end of the world\nbye, bye", "u-os", "cuv");
     kprint("\nthis % is just ignored\n");
@@ -22,4 +26,5 @@ void kernel_main() {
     kprint("hex test: %xd\n", INT_MIN);
     kprint("hex test: %xd\n", INT_MAX);
     kprint("hex test: %xd\n", 5412449);
+    kprint("simple string, no other shit\n");
 }
