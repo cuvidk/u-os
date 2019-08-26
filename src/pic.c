@@ -1,5 +1,6 @@
 #include "pic.h"
 #include "io.h"
+#include "kprint.h"
 #include <stdint.h>
 
 // http://www.brokenthorn.com/Resources/OSDevPic.html
@@ -16,8 +17,10 @@
 
 #define PIC_ICW4_FLAG_8086 (1 << 0)
 
+// set the IDT offsets right after the architectural
+// defined exceptions and interrupts
 #define PIC_MASTER_IDT_OFFSET 0x20
-#define PIC_SLAVE_IDT_OFFSET PIC_MASTER_IDT_OFFSET + 7
+#define PIC_SLAVE_IDT_OFFSET PIC_MASTER_IDT_OFFSET + 8
 
 static void pic_remap() {
     // save IRQ masks
@@ -62,9 +65,12 @@ static void pic_clear_mask(uint8_t irq) {
     outb(port, new_mask);
 }
 
-void pic_init() {
+void setup_pic() {
     // reprogram the PIC to point to our IVT in the IDT
     pic_remap();
+    kprint("    * PIC reprogrammed with IDT offsets between: [%id - %id]\n", 
+            PIC_MASTER_IDT_OFFSET,
+            PIC_MASTER_IDT_OFFSET + 15);
 
     // unmask all IRQs so that none is ignored by PIC
     pic_clear_mask(0x0);
@@ -82,6 +88,7 @@ void pic_init() {
     pic_clear_mask(0xc);
     pic_clear_mask(0xd);
     pic_clear_mask(0xf);
+    kprint("    * PIC IRQ masks cleared\n");
 }
 
 void pic_send_eoi(uint8_t irq) {

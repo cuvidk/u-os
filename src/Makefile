@@ -36,6 +36,8 @@ gen_cc_objs: $(CSRC_FILES)
 	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/xform.o -c xform.c
 	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/io.o -c io.c
 	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/pic.o -c pic.c
+	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/idt.o -c idt.c
+	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/isr.o -c isr.c
 
 clean: clean-obj clean-os
 
