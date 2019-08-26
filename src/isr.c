@@ -1,5 +1,6 @@
 #include "idt.h"
 #include "kprint.h"
+#include "trap_frame.h"
 
 typedef enum {
     EXC_DE = 0,
@@ -59,7 +60,7 @@ static const char *exception_message[] = {
     "Reserved"
 };
 
-static void resolve_general_exception(interrupt_t interrupt) {
+void resolve_general_exception(trap_frame_t* context, interrupt_t interrupt) {
     kprint("\n--------------- EXCEPTION ENCOUNTERED ---------------\n");
 
     if (interrupt < 32) {
@@ -68,7 +69,9 @@ static void resolve_general_exception(interrupt_t interrupt) {
         kprint("Unknown exception with IDT offset %ud ?!?!\n", interrupt);
     }
 
-    //dump_frame
+    kprint("\nDumping trap frame:\n");
+    dump_trap_frame(context);
+    kprint("\n");
 
     kprint("Halting execution. Bye...\n");
     kprint("-----------------------------------------------------\n");
@@ -77,47 +80,47 @@ static void resolve_general_exception(interrupt_t interrupt) {
     asm("hlt");
 }
 
-static void resolve_divide_error()                { resolve_general_exception(EXC_DE); }
-static void resolve_debug_exception()             { resolve_general_exception(EXC_DB); }
-static void resolve_nmi_interrupt()               { resolve_general_exception(INT_NMI); }
-static void resolve_breakpoint()                  { resolve_general_exception(EXC_BP); }
-static void resolve_overflow()                    { resolve_general_exception(EXC_OF); }
-static void resolve_bound_range_exceeded()        { resolve_general_exception(EXC_BR); }
-static void resolve_invalid_opcode()              { resolve_general_exception(EXC_UD); }
-static void resolve_no_math_coproccessor()        { resolve_general_exception(EXC_NM); }
-static void resolve_double_fault()                { resolve_general_exception(EXC_DF); }
-static void resolve_coprocessor_segment_overrun() { resolve_general_exception(EXC_CSO); }
-static void resolve_invalid_tss()                 { resolve_general_exception(EXC_TS); }
-static void resolve_segment_not_present()         { resolve_general_exception(EXC_NP); }
-static void resolve_stack_segment_fault()         { resolve_general_exception(EXC_SS); }
-static void resolve_general_protection()          { resolve_general_exception(EXC_GP); }
-static void resolve_page_fault()                  { resolve_general_exception(EXC_PF); }
-static void resolve_math_fault()                  { resolve_general_exception(EXC_MF); }
-static void resolve_alignment_check()             { resolve_general_exception(EXC_AC); }
-static void resolve_machine_check()               { resolve_general_exception(EXC_MC); }
-static void resolve_floating_point_exception()    { resolve_general_exception(EXC_XM); }
-static void resolve_virtualization_exception()    { resolve_general_exception(EXC_VE); }
+extern void _resolve_divide_error();
+extern void _resolve_debug_exception();
+extern void _resolve_nmi_interrupt();
+extern void _resolve_breakpoint();
+extern void _resolve_overflow();
+extern void _resolve_bound_range_exceeded();
+extern void _resolve_invalid_opcode();
+extern void _resolve_no_math_coproccessor();
+extern void _resolve_double_fault();
+extern void _resolve_coprocessor_segment_overrun();
+extern void _resolve_invalid_tss();
+extern void _resolve_segment_not_present();
+extern void _resolve_stack_segment_fault();
+extern void _resolve_general_protection();
+extern void _resolve_page_fault();
+extern void _resolve_math_fault();
+extern void _resolve_alignment_check();
+extern void _resolve_machine_check();
+extern void _resolve_floating_point_exception();
+extern void _resolve_virtualization_exception();
 
 void setup_isr() {
-    install_interrupt_gate(EXC_DE, resolve_divide_error);
-    install_interrupt_gate(EXC_DB, resolve_debug_exception);
-    install_interrupt_gate(INT_NMI, resolve_nmi_interrupt);
-    install_interrupt_gate(EXC_BP, resolve_breakpoint);
-    install_interrupt_gate(EXC_OF, resolve_overflow);
-    install_interrupt_gate(EXC_BR, resolve_bound_range_exceeded);
-    install_interrupt_gate(EXC_UD, resolve_invalid_opcode);
-    install_interrupt_gate(EXC_NM, resolve_no_math_coproccessor);
-    install_interrupt_gate(EXC_DF, resolve_double_fault);
-    install_interrupt_gate(EXC_CSO, resolve_coprocessor_segment_overrun);
-    install_interrupt_gate(EXC_TS, resolve_invalid_tss);
-    install_interrupt_gate(EXC_NP, resolve_segment_not_present);
-    install_interrupt_gate(EXC_SS, resolve_stack_segment_fault);
-    install_interrupt_gate(EXC_GP, resolve_general_protection);
-    install_interrupt_gate(EXC_PF, resolve_page_fault);
-    install_interrupt_gate(EXC_MF, resolve_math_fault);
-    install_interrupt_gate(EXC_AC, resolve_alignment_check);
-    install_interrupt_gate(EXC_MC, resolve_machine_check);
-    install_interrupt_gate(EXC_XM, resolve_floating_point_exception);
-    install_interrupt_gate(EXC_VE, resolve_virtualization_exception);
+    install_interrupt_gate(EXC_DE, _resolve_divide_error);
+    install_interrupt_gate(EXC_DB, _resolve_debug_exception);
+    install_interrupt_gate(INT_NMI, _resolve_nmi_interrupt);
+    install_interrupt_gate(EXC_BP, _resolve_breakpoint);
+    install_interrupt_gate(EXC_OF, _resolve_overflow);
+    install_interrupt_gate(EXC_BR, _resolve_bound_range_exceeded);
+    install_interrupt_gate(EXC_UD, _resolve_invalid_opcode);
+    install_interrupt_gate(EXC_NM, _resolve_no_math_coproccessor);
+    install_interrupt_gate(EXC_DF, _resolve_double_fault);
+    install_interrupt_gate(EXC_CSO, _resolve_coprocessor_segment_overrun);
+    install_interrupt_gate(EXC_TS, _resolve_invalid_tss);
+    install_interrupt_gate(EXC_NP, _resolve_segment_not_present);
+    install_interrupt_gate(EXC_SS, _resolve_stack_segment_fault);
+    install_interrupt_gate(EXC_GP, _resolve_general_protection);
+    install_interrupt_gate(EXC_PF, _resolve_page_fault);
+    install_interrupt_gate(EXC_MF, _resolve_math_fault);
+    install_interrupt_gate(EXC_AC, _resolve_alignment_check);
+    install_interrupt_gate(EXC_MC, _resolve_machine_check);
+    install_interrupt_gate(EXC_XM, _resolve_floating_point_exception);
+    install_interrupt_gate(EXC_VE, _resolve_virtualization_exception);
     kprint("    * Added IDT gates for architectural defined exceptions / interrupts\n");
 }
