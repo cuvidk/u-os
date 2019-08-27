@@ -68,10 +68,9 @@ _start:
     call _setup_gdt64
 
 BITS 64
-    call kernel_main
+    sti
 
-    ;mov rax, 0x2f592f412f4b2f4f
-    ;mov qword [0xb8000], rax
+    call kernel_main
 
     cli
 .hang:

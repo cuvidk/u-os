@@ -14,7 +14,7 @@ global %1:function (%1.end - %1)
     mov rsi, %2
     call resolve_general_exception
     ; this won't be reach; we halt execution in the above call
-    iret
+    iretq
 .end:
 %endmacro
 

@@ -43,6 +43,7 @@ typedef enum {
     SPEC_HEX64,
 
     SPEC_STR,
+    SPEC_CHAR,
     SPEC_ESCAPE,
     SPEC_END,
     SPEC_UNKN
@@ -63,6 +64,8 @@ static specifier_t specifier_type(const char* format) {
     switch (_1st) {
     case 's':
         return SPEC_STR;
+    case 'c':
+        return SPEC_CHAR;
     case '%':
         return SPEC_ESCAPE;
     case 'i':
@@ -96,6 +99,7 @@ void kprint(const char* format, ...) {
     va_list args;
     va_start(args, format);
 
+    char c;
     char* s = NULL;
     char num[MAX_INT64_DIGITS];
 
@@ -119,6 +123,11 @@ void kprint(const char* format, ...) {
        case SPEC_STR:
            s = va_arg(args, char*);
            PRINT_STR(s)
+           break;
+       case SPEC_CHAR:
+           c = (char)va_arg(args, uint32_t);
+           vga_print_range(needle, format - needle - 1);
+           vga_print_range(&c, 1);
            break;
        // all casted to int by passing the parameters through an ellipse (...)
        // so just treat them the same way

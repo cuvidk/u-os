@@ -29,6 +29,7 @@ gen_as_objs:
 	$(AS) $(AS_FLAGS) -o $(OBJ_DIR)/paging.o paging.asm
 	$(AS) $(AS_FLAGS) -o $(OBJ_DIR)/isr0.o isr.asm
 	$(AS) $(AS_FLAGS) -o $(OBJ_DIR)/trap_frame0.o trap_frame.asm
+	$(AS) $(AS_FLAGS) -o $(OBJ_DIR)/keyboard0.o keyboard.asm
 
 gen_cc_objs: $(CSRC_FILES) 
 	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/kernel.o -c kernel.c
@@ -41,6 +42,7 @@ gen_cc_objs: $(CSRC_FILES)
 	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/idt.o -c idt.c
 	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/isr.o -c isr.c
 	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/trap_frame.o -c trap_frame.c
+	$(CC) $(CC_FLAGS) -o $(OBJ_DIR)/keyboard.o -c keyboard.c
 
 clean: clean-obj clean-os
 

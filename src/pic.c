@@ -1,7 +1,6 @@
 #include "pic.h"
 #include "io.h"
 #include "kprint.h"
-#include <stdint.h>
 
 // http://www.brokenthorn.com/Resources/OSDevPic.html
 
@@ -17,11 +16,6 @@
 
 #define PIC_ICW4_FLAG_8086 (1 << 0)
 
-// set the IDT offsets right after the architectural
-// defined exceptions and interrupts
-#define PIC_MASTER_IDT_OFFSET 0x20
-#define PIC_SLAVE_IDT_OFFSET PIC_MASTER_IDT_OFFSET + 8
-
 static void pic_remap() {
     // save IRQ masks
     uint8_t m = inb(PIC_MASTER_DATA);
@@ -32,8 +26,8 @@ static void pic_remap() {
     outb(PIC_SLAVE_COMMAND, PIC_ICW1_FLAG_INIT | PIC_ICW1_FLAG_ICW4);
 
     // ICW2: remaps IRQs to new IDT offset
-    outb(PIC_MASTER_DATA, PIC_MASTER_IDT_OFFSET);
-    outb(PIC_SLAVE_DATA, PIC_SLAVE_IDT_OFFSET);
+    outb(PIC_MASTER_DATA, IRQ0_TIMER_IDT_OFFSET);
+    outb(PIC_SLAVE_DATA, IRQ8_CMOS_RTC_IDT_OFFSET);
 
     // ICW3: Specifies what IRQ is connected to slave PIC
     outb(PIC_MASTER_DATA, 0x4); // 0b0000_0100
@@ -49,12 +43,12 @@ static void pic_remap() {
     outb(PIC_SLAVE_DATA, s);
 }
 
-static void pic_clear_mask(uint8_t irq) {
+void pic_clear_mask(uint8_t irq) {
     if (irq > 15) {
         return;
     }
 
-    uint8_t port = PIC_MASTER_DATA;
+    uint16_t port = PIC_MASTER_DATA;
 
     if (irq > 7) {
         port = PIC_SLAVE_DATA;
@@ -65,29 +59,45 @@ static void pic_clear_mask(uint8_t irq) {
     outb(port, new_mask);
 }
 
+void pic_set_mask(uint8_t irq) {
+    if (irq > 15) {
+        return;
+    }
+
+    uint16_t port = PIC_MASTER_DATA;
+
+    if (irq > 7) {
+        port = PIC_SLAVE_DATA;
+        irq -= 8;
+    }
+
+    uint8_t new_mask = inb(port) | (1 << irq);
+    outb(port, new_mask);
+}
+
 void setup_pic() {
     // reprogram the PIC to point to our IVT in the IDT
     pic_remap();
     kprint("    * PIC reprogrammed with IDT offsets between: [%id - %id]\n", 
-            PIC_MASTER_IDT_OFFSET,
-            PIC_MASTER_IDT_OFFSET + 15);
+            IRQ0_TIMER_IDT_OFFSET,
+            IRQ0_TIMER_IDT_OFFSET + 15);
 
     // unmask all IRQs so that none is ignored by PIC
-    pic_clear_mask(0x0);
-    pic_clear_mask(0x1);
-    pic_clear_mask(0x2);
-    pic_clear_mask(0x3);
-    pic_clear_mask(0x4);
-    pic_clear_mask(0x5);
-    pic_clear_mask(0x6);
-    pic_clear_mask(0x7);
-    pic_clear_mask(0x8);
-    pic_clear_mask(0x9);
-    pic_clear_mask(0xa);
-    pic_clear_mask(0xb);
-    pic_clear_mask(0xc);
-    pic_clear_mask(0xd);
-    pic_clear_mask(0xf);
+    pic_set_mask(0x0);
+    pic_set_mask(0x1);
+    pic_set_mask(0x2);
+    pic_set_mask(0x3);
+    pic_set_mask(0x4);
+    pic_set_mask(0x5);
+    pic_set_mask(0x6);
+    pic_set_mask(0x7);
+    pic_set_mask(0x8);
+    pic_set_mask(0x9);
+    pic_set_mask(0xa);
+    pic_set_mask(0xb);
+    pic_set_mask(0xc);
+    pic_set_mask(0xd);
+    pic_set_mask(0xf);
     kprint("    * PIC IRQ masks cleared\n");
 }
 
