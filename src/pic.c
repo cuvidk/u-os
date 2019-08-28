@@ -78,7 +78,7 @@ void pic_set_mask(uint8_t irq) {
 void setup_pic() {
     // reprogram the PIC to point to our IVT in the IDT
     pic_remap();
-    kprint("    * PIC reprogrammed with IDT offsets between: [%id - %id]\n", 
+    kprint("\t* PIC reprogrammed with IDT offsets between: [%id - %id]\n", 
             IRQ0_TIMER_IDT_OFFSET,
             IRQ0_TIMER_IDT_OFFSET + 15);
 
@@ -98,7 +98,7 @@ void setup_pic() {
     pic_set_mask(0xc);
     pic_set_mask(0xd);
     pic_set_mask(0xf);
-    kprint("    * PIC IRQ masks cleared\n");
+    kprint("\t* PIC IRQ masks cleared\n");
 }
 
 void pic_send_eoi(uint8_t irq) {

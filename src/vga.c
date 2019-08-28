@@ -63,6 +63,11 @@ void vga_print_range(const char* str, size_t len) {
             continue;
         }
 
+        if ('\t' == str[i]) {
+            crt_col += 4;
+            continue;
+        }
+
         if (VGA_SCREEN_WIDTH <= crt_col) {
             ++crt_row;
             crt_col = 0;

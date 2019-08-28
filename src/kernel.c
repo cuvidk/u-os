@@ -7,8 +7,6 @@
 #include <limits.h>
 #include <stdint.h>
 
-extern void _gen();
-
 void kernel_main() {
     vga_reset_screen();
 
@@ -31,6 +29,9 @@ void kernel_main() {
 
     kprint("\nSetting up keyboard\n");
     setup_keyboard();
+
+    kprint("\nWrite me a keyboard poem please:\n");
+    kprint("----------------------------------\n");
 
     while (1) {}
 }

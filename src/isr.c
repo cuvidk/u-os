@@ -122,5 +122,5 @@ void setup_isr() {
     install_interrupt_gate(EXC_MC, _resolve_machine_check);
     install_interrupt_gate(EXC_XM, _resolve_floating_point_exception);
     install_interrupt_gate(EXC_VE, _resolve_virtualization_exception);
-    kprint("    * Added IDT gates for architectural defined exceptions / interrupts\n");
+    kprint("\t* Added IDT gates for architectural defined exceptions / interrupts\n");
 }

@@ -51,9 +51,9 @@ void setup_idt() {
     idt_desc.size = sizeof(idt) - 1;
     idt_desc.base = (uint64_t)idt;
 
-    kprint("    * Setting IDT table at addr %xq\n", &idt);
-    kprint("    * Setting IDT size to %uq\n", idt_desc.size);
+    kprint("\t* Setting IDT table at addr %xq\n", &idt);
+    kprint("\t* Setting IDT size to %uq\n", idt_desc.size);
 
     asm ("lidt %0" : : "m"(idt_desc));
-    kprint("    * Loaded new IDT table pointer in IDTR register\n");
+    kprint("\t* Loaded new IDT table pointer in IDTR register\n");
 }
